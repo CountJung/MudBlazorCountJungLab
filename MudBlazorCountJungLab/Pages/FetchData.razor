@@ -1,6 +1,7 @@
 ﻿@page "/fetchdata"
 @inject HttpClient Http
 @using MudBlazorCountJungLab.Shared
+@using MudBlazorCountJungLab.Services
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -38,6 +39,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        forecasts = weatherforecastService.GetForecasts(DateTime.Now);
     }
     public class WeatherForecast
     {
