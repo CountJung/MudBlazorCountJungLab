@@ -1,4 +1,11 @@
 ﻿@page "/"
+@using System.Globalization;
+@using MudBlazorCountJungLab.Services;
+@using Microsoft.AspNetCore.WebUtilities;
+@implements IDisposable
+@*@implements IAsyncDisposable*@
+
+@*@inject NavigationManager NaviManager*@
 
 <PageTitle>Index</PageTitle>
 
@@ -13,32 +20,138 @@
                 </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                <MudTextField Label="en-US" Variant="Variant.Outlined" Culture="@en" @bind-Value="date" />
+            </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                <MudTextField Label="ko-KR" Variant="Variant.Outlined" Culture="@kr" @bind-Value="date" />
+            </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                        <MudGrid>
+                            <MudItem xs="10">
+                                <MudTextField Label="Switch state" Variant="Variant.Outlined" Converter="@converter" @bind-Value="@DarkMode" Immediate="true" />
+                            </MudItem>
+                            <MudItem xs="2">
+                                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit" OnClick="UpdateThemeStatus" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                        
+                    </MudPaper>
                 </MudItem>
             </MudGrid>
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%"></MudPaper>
+            <MudPaper Elevation="2" Class="d-flex align-center justify-center mud-width-full py-8" Style="height: 100%">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non
+                enim praesent elementum facilisis leo vel. Risus at ultrices mi tempus
+                imperdiet. Semper risus in hendrerit gravida rutrum quisque non tellus.
+                Convallis convallis tellus id interdum velit laoreet id donec ultrices.
+                Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
+                adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra
+                nibh cras. Metus vulputate eu scelerisque felis imperdiet proin fermentum
+                leo. Mauris commodo quis imperdiet massa tincidunt. Cras tincidunt lobortis
+                feugiat vivamus at augue. At augue eget arcu dictum varius duis at
+                consectetur lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa
+                sapien faucibus et molestie ac.
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12" >
+            <MudPaper Elevation="5" Class="d-flex align-center justify-center mud-width-full py-8" Style="height: 100%">
+                Consequat mauris nunc congue nisi vitae suscipit. Fringilla est ullamcorper
+                eget nulla facilisi etiam dignissim diam. Pulvinar elementum integer enim
+                neque volutpat ac tincidunt. Ornare suspendisse sed nisi lacus sed viverra
+                tellus. Purus sit amet volutpat consequat mauris. Elementum eu facilisis
+                sed odio morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
+                tincidunt ornare massa eget egestas purus viverra accumsan in. In hendrerit
+                gravida rutrum quisque non tellus orci ac. Pellentesque nec nam aliquam sem
+                et tortor. Habitant morbi tristique senectus et. Adipiscing elit duis
+                tristique sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
+                eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
+                posuere sollicitudin aliquam ultrices sagittis orci a.
+            </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="5" Class="pa-7" Style="height: 200px;"></MudPaper>
         </MudItem>
         <MudItem xs="12" sm="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="5" Class="pa-7" Style="height: 200px;"></MudPaper>
         </MudItem>
     </MudGrid>
 </MudContainer>
+
+@code
+{
+    //public static Index? Instance;
+    DateTime date = DateTime.Now;
+    CultureInfo en = CultureInfo.GetCultureInfo("en-US");
+    CultureInfo kr = CultureInfo.GetCultureInfo("ko-KR");
+
+    public bool DarkMode;
+    private Timer? refreshTimer;
+
+    Converter<bool> converter = new Converter<bool>
+        {
+            SetFunc = value => value ? "DarkMode" : "LightMode",
+            GetFunc = text => (text ?? "").ToLowerInvariant() == "darkmode",
+        };
+
+    private void UpdateThemeStatus()
+    {
+        DarkMode = (bool)GlobalVariable.Instance?.DarkMode!;
+    }
+
+    //protected override void OnInitialized()
+    //{
+    //    base.OnInitialized();
+    //    Instance = this;
+    //}
+
+    private async Task RefreshPageTask()
+    {
+        await InvokeAsync(() =>
+        {
+            UpdateThemeStatus();
+            StateHasChanged();
+        });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //var uri = new Uri(NaviManager.Uri);
+        //var queryParams = QueryHelpers.ParseQuery(uri.Query);
+        //if (queryParams.ContainsKey("DarkMode"))
+        //DarkMode = bool.Parse(queryParams["DarkMode"]!);
+        //await Task.CompletedTask;
+
+        //Instance = this;
+        await base.OnInitializedAsync();
+        refreshTimer = new Timer(async _ =>
+        {
+            await RefreshPageTask();
+        }, null, 0, 1000);
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+    }
+
+    //public async ValueTask DisposeAsync()
+    //{
+    //    //if (obj is not null)
+    //    //{
+    //    //    await obj.DisposeAsync();
+    //    //}
+    //}
+}

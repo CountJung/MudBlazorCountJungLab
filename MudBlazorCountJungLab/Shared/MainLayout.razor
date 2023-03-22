@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using MudBlazorCountJungLab.Services;
+@inherits LayoutComponentBase
+@*@inject NavigationManager NaviManager*@
 
 <MudThemeProvider @bind-IsDarkMode="@isDarkMode" @ref="@mudThemeProvider" Theme="mudTheme" DefaultScrollbar=true />
 <MudDialogProvider />
@@ -10,8 +12,8 @@
         <MudSpacer />
         @*<MudSwitch @bind-Checked="@isDarkMode" Color="Color.Inherit" T="bool" Class="ma-8" Label="Toggle Light/Dark Mode" />*@
         <MudToggleIconButton @bind-Toggled="@isDarkMode" Icon="@Icons.Material.Filled.LightMode" ToggledIcon="@Icons.Material.Filled.DarkMode" Color="Color.Primary" ToggledColor="Color.Secondary" Title="LightMode" ToggledTitle="DarkMode" />
-        <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />
+        <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Href="https://mudblazor.com/" Target="_blank" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />
     </MudAppBar>
     <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1">
         <MudDrawerHeader>
@@ -71,6 +73,15 @@
         else
         {
         }
+        if(GlobalVariable.Instance != null)
+        {
+            GlobalVariable.Instance.DarkMode = isDarkMode;
+        }
+        //if (Pages.Index.Instance is not null)
+        //{
+        //    Pages.Index.Instance.DarkMode = isDarkMode;
+        //}
+        //NaviManager.NavigateTo($"/?DarkMode={isDarkMode}");
     }
 
     protected override void OnParametersSet()
