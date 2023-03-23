@@ -1,4 +1,4 @@
-﻿@using MudBlazorCountJungLab.Services;
+﻿@using MudBlazorCountJungLab.Context;
 @inherits LayoutComponentBase
 @*@inject NavigationManager NaviManager*@
 
@@ -8,7 +8,7 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Color="Color.Tertiary" >
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle(e))" />
         <MudSpacer />
         @*<MudSwitch @bind-Checked="@isDarkMode" Color="Color.Inherit" T="bool" Class="ma-8" Label="Toggle Light/Dark Mode" />*@
         <MudToggleIconButton @bind-Toggled="@isDarkMode" Icon="@Icons.Material.Filled.LightMode" ToggledIcon="@Icons.Material.Filled.DarkMode" Color="Color.Primary" ToggledColor="Color.Secondary" Title="LightMode" ToggledTitle="DarkMode" />
@@ -60,6 +60,7 @@
     {
         //avoid warning
         await Task.CompletedTask;
+        mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -98,7 +99,7 @@
         await Task.CompletedTask;
     }
 
-    private void DrawerToggle()
+    private void DrawerToggle(MouseEventArgs eventArgs)
     {
         drawerOpen = !drawerOpen;
     }

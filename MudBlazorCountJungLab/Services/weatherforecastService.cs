@@ -3,6 +3,17 @@ using static MudBlazorCountJungLab.Pages.FetchData;
 
 namespace MudBlazorCountJungLab.Services
 {
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string? Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
     public class weatherforecastService
     {
         private static readonly string[] summaries = new[]
@@ -40,7 +51,7 @@ namespace MudBlazorCountJungLab.Services
                 }).ToArray();
             });
         }
-        public static WeatherForecast[]? GetForecasts(DateTime startDate) 
+        public static List<WeatherForecast>? GetForecasts(DateTime startDate) 
         {
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
@@ -48,7 +59,7 @@ namespace MudBlazorCountJungLab.Services
                 Date = startDate.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
                 Summary = summaries[rng.Next(summaries.Length)]
-            }).ToArray();
+            }).ToList();
         }
     }
 }

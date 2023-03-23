@@ -1,0 +1,82 @@
+﻿@page "/TestSample1"
+@using System.Threading
+@using Microsoft.Extensions.Logging
+@implements IDisposable
+@inject ILogger<TestSample1> Logger
+
+<PageTitle>TestSample1</PageTitle>
+
+<ErrorBoundary @ref="errorBoundary">
+    <ChildContent>
+        <MudText Typo="Typo.h1" GutterBottom="true">Logger Cancel Token</MudText>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="LongRunningWork">Working?</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" @onclick="Dispose">Disposing!</MudButton>
+    </ChildContent>
+    <ErrorContent>
+        <MudAppBar Bottom="true" Color="Color.Primary">
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Square="false" Class="my-4"> <h1>Exception Error!</h1> </MudAlert>
+        </MudAppBar>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private ErrorBoundary? errorBoundary;
+    private Resource resource = new();
+    private CancellationTokenSource cts = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        errorBoundary?.Recover();
+    }
+
+    protected async Task LongRunningWork()
+    {
+        Logger.LogInformation("Long running work started");
+
+        await Task.Delay(5000, cts.Token);
+
+        cts.Token.ThrowIfCancellationRequested();
+        resource.BackgroundResourceMethod(Logger);
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            Logger.LogInformation("Executing Dispose");
+            cts.Cancel();
+            cts.Dispose();
+            resource?.Dispose();
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+        }
+    }
+
+    private class Resource : IDisposable
+    {
+        private bool disposed;
+
+        public void BackgroundResourceMethod(ILogger<TestSample1> logger)
+        {
+            logger.LogInformation("BackgroundResourceMethod: Start method");
+
+            if (disposed)
+            {
+                logger.LogInformation("BackgroundResourceMethod: Disposed");
+                throw new ObjectDisposedException(nameof(Resource));
+            }
+
+            // Take action on the Resource
+
+            logger.LogInformation("BackgroundResourceMethod: Action on Resource");
+        }
+
+        public void Dispose()
+        {
+            disposed = true;
+        }
+    }
+}

@@ -1,9 +1,9 @@
-﻿namespace MudBlazorCountJungLab.Services
+﻿namespace MudBlazorCountJungLab.Context
 {
     public class GlobalVariable
     {
         public static GlobalVariable? Instance { get; set; }
-        public GlobalVariable() 
+        public GlobalVariable()
         {
             Instance = this;
         }

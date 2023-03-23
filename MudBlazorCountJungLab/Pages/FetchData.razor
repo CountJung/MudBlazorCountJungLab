@@ -2,7 +2,8 @@
 @inject HttpClient Http
 @using MudBlazorCountJungLab.Shared
 @using MudBlazorCountJungLab.Services
-
+@using Microsoft.AspNetCore.WebUtilities;
+@inject NavigationManager NaviManager
 <PageTitle>Weather forecast</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Weather forecast</MudText>
@@ -34,21 +35,26 @@ else
 
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private List<WeatherForecast>? forecasts;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-        forecasts = weatherforecastService.GetForecasts(DateTime.Now);
-    }
-    public class WeatherForecast
-    {
-        public DateTime Date { get; set; }
+        forecasts ??= await Http.GetFromJsonAsync<List<WeatherForecast>>("sample-data/weather.json");
+        forecasts?.AddRange(weatherforecastService.GetForecasts(DateTime.Now)!);
 
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        Uri uri = NaviManager.ToAbsoluteUri(NaviManager.Uri);
+        var queryStrings = QueryHelpers.ParseQuery(uri.Query);
+        if(queryStrings.Count>0)
+        {
+            WeatherForecast weather = new()
+                {
+                    Date = DateTime.Now
+                };
+            queryStrings.TryGetValue("weatherString", out var summary);
+            weather.Summary = summary;
+            queryStrings.TryGetValue("weatherTemperature", out var temperature);
+            weather.TemperatureC = Convert.ToInt32(temperature);
+            forecasts?.Add(weather);
+        }
     }
 }
