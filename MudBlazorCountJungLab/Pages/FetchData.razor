@@ -42,19 +42,47 @@ else
         forecasts ??= await Http.GetFromJsonAsync<List<WeatherForecast>>("sample-data/weather.json");
         forecasts?.AddRange(weatherforecastService.GetForecasts(DateTime.Now)!);
 
-        Uri uri = NaviManager.ToAbsoluteUri(NaviManager.Uri);
-        var queryStrings = QueryHelpers.ParseQuery(uri.Query);
-        if(queryStrings.Count>0)
+        //Uri uri = NaviManager.ToAbsoluteUri(NaviManager.Uri);
+        //var queryStrings = QueryHelpers.ParseQuery(uri.Query);
+        //if(queryStrings.Count>0)
+        //{
+        //    WeatherForecast weather = new()
+        //        {
+        //            Date = DateTime.Now
+        //        };
+        //    queryStrings.TryGetValue("weatherString", out var summary);
+        //    weather.Summary = summary;
+        //    queryStrings.TryGetValue("weatherTemperature", out var temperature);
+        //    weather.TemperatureC = Convert.ToInt32(temperature);
+        //    forecasts?.Add(weather);
+        //}
+        string summary = ExtractQueryStringByKey<string>(NaviManager, "weatherString");
+        int temperatureC = ExtractQueryStringByKey<int>(NaviManager, "weatherTemperature");
+        if(summary!=default && temperatureC!=default)
         {
             WeatherForecast weather = new()
                 {
-                    Date = DateTime.Now
+                    Summary = summary,
+                    Date = DateTime.Now,
+                    TemperatureC = temperatureC
                 };
-            queryStrings.TryGetValue("weatherString", out var summary);
-            weather.Summary = summary;
-            queryStrings.TryGetValue("weatherTemperature", out var temperature);
-            weather.TemperatureC = Convert.ToInt32(temperature);
-            forecasts?.Add(weather);
+                forecasts?.Add(weather);
         }
+    }
+
+    private T ExtractQueryStringByKey<T>(NavigationManager navigationManager, string key)
+    {
+        T result = default!;
+        Uri uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        QueryHelpers.ParseQuery(uri.Query).TryGetValue(key, out var queryValue);
+
+        if (typeof(T).Equals(typeof(string)))
+            result = (T)(object)queryValue.ToString();
+        else if (typeof(T).Equals(typeof(int)))
+            result = (T)(object)Convert.ToInt32(queryValue);
+        else if (typeof(T).Equals(typeof(double)))
+            result = (T)(object)Convert.ToDouble(queryValue);
+
+        return result;
     }
 }
