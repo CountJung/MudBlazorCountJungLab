@@ -8,20 +8,40 @@
 @*@implements IAsyncDisposable*@
 @inject NavigationManager NaviManager
 
+@*The properties:
+
+m - for classes that set margin
+p - for classes that set padding
+The direction property applies to:
+
+t - for margin-top or padding-top
+b - for margin-bottom or padding-bottom
+l - for margin-left or padding-left
+r - for margin-right or padding-right
+s - for margin-left/padding-left (in LTR mode) and margin-right/padding-right (in RTL mode)
+e - for margin-right/padding-right (in LTR mode) and margin-left/padding-left (in RTL mode)
+x - for margin-left/padding-left and margin-right/padding-right
+y - for margin-top/padding-top and margin-bottom/padding-bottom
+a - for all 4 sides.*@
+
 <PageTitle>OverView</PageTitle>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
-                <MudText Typo="Typo.h1">Hello Papers</MudText>
+            <MudPaper Elevation="2" Style="height: 200px;">
+                <MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="150px" ChartOptions="chartOptions"></MudChart>
+                @*<MudButton @onclick="RandomizeLineWidths">Randomize Line Widths</MudButton>
+                <MudText Typo="Typo.h6">Selected portion of the chart: @Index</MudText>*@
             </MudPaper>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center">[LineChart]</MudText>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
                 <MudTextField Label="en-US" Variant="Variant.Outlined" Culture="@en" @bind-Value="date" />
                 <MudTextField Label="ko-KR" Variant="Variant.Outlined" Culture="@kr" @bind-Value="date" />
             </MudPaper>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center">[TextField]</MudText>
         </MudItem>
         <MudItem xs="12" sm="12" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
@@ -30,7 +50,7 @@
                         <MudTextField Label="Switch state" Variant="Variant.Outlined" Converter="@converter" @bind-Value="@DarkMode" Immediate="true" />
                     </MudItem>
                     <MudItem xs="2">
-                        <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit" OnClick="UpdateThemeStatus" />
+                        <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit" OnClick="UpdateDatas" />
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -45,11 +65,11 @@
                         <MudButton Class="ma-4" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Send" Color="Color.Primary" OnClick="QueryNavigatePage">Send</MudButton>
                     </MudPaper>
                 </MudItem>
-               @*<MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+               <MudItem xs="12">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 400px;">
 
                     </MudPaper>
-                </MudItem>*@
+                </MudItem>
             </MudGrid>
         </MudItem>
         <MudItem xs="12" sm="6">
@@ -69,6 +89,7 @@
                     sapien faucibus et molestie ac.
                 </MudText>
             </MudPaper>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center">[Typography]</MudText>
         </MudItem>
         <MudItem xs="12" sm="12">
             <MudPaper Elevation="5" Class="d-flex align-center justify-center mud-width-full py-8" Style="height: 100%">
@@ -86,6 +107,7 @@
                     posuere sollicitudin aliquam ultrices sagittis orci a.
                 </MudText>
             </MudPaper>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">[Typography]</MudText>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="5" Class="pa-7" Style="height: 200px;"></MudPaper>
@@ -106,16 +128,46 @@
     private Timer? refreshTimer;
     public int WeatherTemperatureC { get; set; }
     public string? WeatherSummaryString { get; set; }
-
     Converter<bool> converter = new Converter<bool>
         {
             SetFunc = value => value ? "DarkMode" : "LightMode",
             GetFunc = text => (text ?? "").ToLowerInvariant() == "darkmode",
         };
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+    public ChartOptions chartOptions = new ChartOptions() { LineStrokeWidth = 5 };
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Series 1", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70, 200} },
+        new ChartSeries() { Name = "Series 2", Data = new double[] { 10, 41, 35, 51, 49, 62, 69, 91, 148, 200 } },
+    };
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+    Random random = new Random();
+    private void RandomizeData()
+    {
+        var new_series = new List<ChartSeries>()
+        {
+            new ChartSeries() { Name = "Series 1", Data = new double[10] },
+            new ChartSeries() { Name = "Series 2", Data = new double[10] },
+        };
+        for (int i = 0; i < 10; i++)
+        {
+            new_series[0].Data[i] = random.NextDouble() * 100;
+            new_series[1].Data[i] = random.NextDouble() * 100;
+        }
+        Series = new_series;
+        StateHasChanged();
+    }
 
-    private void UpdateThemeStatus()
+    private void RandomizeLineWidths()
+    {
+        chartOptions.LineStrokeWidth = random.NextInt64(1, 5);
+        StateHasChanged();
+    }
+
+    private void UpdateDatas()
     {
         DarkMode = (bool)GlobalVariable.Instance?.DarkMode!;
+        RandomizeData();
     }
 
     //protected override void OnInitialized()
@@ -128,7 +180,7 @@
     {
         await InvokeAsync(() =>
         {
-            UpdateThemeStatus();
+            UpdateDatas();
             StateHasChanged();
         });
     }

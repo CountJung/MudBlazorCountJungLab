@@ -14,7 +14,7 @@ namespace MudBlazorCountJungLab.Services
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
 
-    public class weatherforecastService
+    public class WeatherforecastService
     {
         private static readonly string[] summaries = new[]
     {
@@ -22,7 +22,7 @@ namespace MudBlazorCountJungLab.Services
         "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-        public weatherforecastService(IMemoryCache memoryCache)
+        public WeatherforecastService(IMemoryCache memoryCache)
         {
             MemoryCache = memoryCache;
         }

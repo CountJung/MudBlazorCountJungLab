@@ -40,7 +40,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         forecasts ??= await Http.GetFromJsonAsync<List<WeatherForecast>>("sample-data/weather.json");
-        forecasts?.AddRange(weatherforecastService.GetForecasts(DateTime.Now)!);
+        forecasts?.AddRange(WeatherforecastService.GetForecasts(DateTime.Now)!);
 
         //Uri uri = NaviManager.ToAbsoluteUri(NaviManager.Uri);
         //var queryStrings = QueryHelpers.ParseQuery(uri.Query);
