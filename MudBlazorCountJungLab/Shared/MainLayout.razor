@@ -14,6 +14,7 @@
         <MudToggleIconButton @bind-Toggled="@isDarkMode" Icon="@Icons.Material.Filled.LightMode" ToggledIcon="@Icons.Material.Filled.DarkMode" Color="Color.Primary" ToggledColor="Color.Secondary" Title="LightMode" ToggledTitle="DarkMode" />
         <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Href="https://mudblazor.com/" Target="_blank" />
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />
+        <MudAvatar Color="Color.Warning">@User</MudAvatar>
     </MudAppBar>
     <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1">
         <MudDrawerHeader>
@@ -52,9 +53,9 @@
     private bool drawerOpen = false;
     private bool isDarkMode = false;
     private MudThemeProvider? mudThemeProvider;
-    [Parameter]
-    public DateTime StartTime { get; set; }
-    public string? TimeString;
+    [Inject] GlobalVariable? globalVariable { get; set; }
+    [Parameter] public DateTime StartTime { get; set; }
+    string? User { get; set; } = "사";
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,9 +75,10 @@
         else
         {
         }
-        if(GlobalVariable.Instance != null)
+        //if(GlobalVariable.Instance != null)
         {
-            GlobalVariable.Instance.DarkMode = isDarkMode;
+            //GlobalVariable.Instance!.DarkMode = isDarkMode;
+            globalVariable!.DarkMode = isDarkMode;
         }
         //if (Pages.Index.Instance is not null)
         //{
