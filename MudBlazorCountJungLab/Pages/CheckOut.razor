@@ -1,9 +1,9 @@
 ﻿@page "/Checkout"
 
-<MudContainer Class="mt-16" MaxWidth="MaxWidth.Medium">
+<MudContainer Class="mt-16" MaxWidth="MaxWidth.False">
     <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Checkout</MudText>
-    <MudGrid Spacing="6" Class="mt-16">
-        <MudItem xs="4">
+    <MudGrid >
+        <MudItem xs="12" sm="6" md="6">
             <MudText Typo="Typo.h5" GutterBottom="true">Billing address</MudText>
             <MudGrid>
                 <MudItem xs="12">
@@ -35,7 +35,7 @@
                 </MudItem>
             </MudGrid>
         </MudItem>
-        <MudItem xs="4">
+        <MudItem xs="12" sm="12" md="6">
             <MudText Typo="Typo.h5" GutterBottom="true">Cart</MudText>
             <MudPaper Class="d-flex flex-column" Style="height:100%;" Outlined="true">
                 <MudList Clickable="true">
