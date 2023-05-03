@@ -3,6 +3,8 @@
 @using Microsoft.Extensions.Logging
 @implements IDisposable
 @inject ILogger<TestSample1> Logger
+@using System.IO
+@inject IJSRuntime JS
 
 <PageTitle>TestSample1</PageTitle>
 
@@ -11,10 +13,59 @@
         <MudText Typo="Typo.h1" GutterBottom="true">Logger Cancel Token</MudText>
         <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="LongRunningWork">Working?</MudButton>
         <MudButton Color="Color.Secondary" Variant="Variant.Filled" @onclick="Dispose">Disposing!</MudButton>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+                    <ButtonTemplate>
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                   for="@context">
+                            Upload using FileValueChanged
+                        </MudButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
+                <MudFileUpload T="IBrowserFile" OnFilesChanged="UploadFiles">
+                    <ButtonTemplate>
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                   for="@context">
+                            Upload using OnFilesChanged
+                        </MudButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                @if (files != null)
+                {
+                    <MudText Typo="@Typo.h6">@files.Count() File@(files.Count() == 1 ? "" : "s"):</MudText>
+                    <MudList>
+                        @foreach (var file in files)
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.AttachFile" @key="@file">
+                                @file.Name <code>@file.Size bytes</code>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary" OnClick="DownloadFileFromStream"
+                           StartIcon="@Icons.Material.Filled.DownloadForOffline">
+                    Download Junk File Test
+                </MudButton>
+            </MudItem>
+        </MudGrid>
     </ChildContent>
     <ErrorContent>
         <MudAppBar Bottom="true" Color="Color.Primary">
-            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Square="false" Class="my-4"> <h1>Exception Error!</h1> </MudAlert>
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Square="false" Class="my-2">
+                <MudText Typo="@Typo.h5">Exception Error!</MudText>
+            </MudAlert>
         </MudAppBar>
     </ErrorContent>
 </ErrorBoundary>
@@ -23,6 +74,47 @@
     private ErrorBoundary? errorBoundary;
     private Resource resource = new();
     private CancellationTokenSource cts = new();
+
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    private void UploadFiles(IBrowserFile file)
+    {
+        foreach(var browserfile in files)
+        {
+            if (browserfile.Name.Contains(file.Name))
+                return;
+        }
+        files.Add(file);
+        //TODO upload the files to the server
+    }
+
+    private void UploadFiles(InputFileChangeEventArgs args)
+    {
+        foreach (var browserfile in files)
+        {
+            if (browserfile.Name.Contains(args.File.Name))
+                return;
+        }
+        files.Add(args.File);
+        //TODO upload the files to the server
+    }
+
+    private Stream GetFileStream()
+    {
+        var randomBinaryData = new byte[10 * 1024];
+        var fileStream = new MemoryStream(randomBinaryData);
+
+        return fileStream;
+    }
+
+    private async Task DownloadFileFromStream()
+    {
+        var fileStream = GetFileStream();
+        var fileName = "Junk.bin";
+
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+        //Exception error
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
 
     protected override void OnParametersSet()
     {
