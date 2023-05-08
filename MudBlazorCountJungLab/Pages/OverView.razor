@@ -178,7 +178,7 @@ a - for all 4 sides.*@
     DateTime date = DateTime.Now;
     CultureInfo en = CultureInfo.GetCultureInfo("en-US");
     CultureInfo kr = CultureInfo.GetCultureInfo("ko-KR");
-    [Inject] GlobalVariable? globalVariable { get; set; }
+    [Inject] GlobalClass? globalVariable { get; set; }
     public bool DarkMode;
     private Timer? refreshTimer;
     public int WeatherTemperatureC { get; set; }
