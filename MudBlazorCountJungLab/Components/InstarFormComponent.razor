@@ -1,0 +1,125 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit" Context="UploadForm">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField T="string" Label="Description" HelperText="@($"Max2000, Current={model.CurrentDescriptionLength}")" Variant="Variant.Outlined" Lines="10"
+                    @bind-Value="model.Description" For="@(() => model.Description)" />
+                   @*  <MudTextField Label="Email" Class="mt-3"
+                    @bind-Value="model.Email" For="@(() => model.Email)" />
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                    @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" /> *@
+
+                    <MudTextField Label="Image File" HelperText="Select Image File" Class="mt-3" 
+                    @bind-Value="model.ImageFileName" For="@(() => model.ImageFileName)" InputType="InputType.Text" />
+
+                    @* context parameter needed *@
+                    <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+                        <ButtonTemplate Context="context">
+                            <MudButton HtmlTag="label"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload" for="@context">  
+                                Upload Image
+                            </MudButton>
+                        </ButtonTemplate>
+                    </MudFileUpload>
+
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Submit</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @*Image layer*@
+        <MudItem xs="12" sm="5">
+            @* <MudPaper Class="pa-4 mud-height-full">
+                 <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                @if (success)
+                {
+                    <MudText Color="Color.Success">Success</MudText>
+                }
+                else
+                {
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary />
+                    </MudText>
+                } 
+            </MudPaper> *@
+
+            @* <MudCard>
+                <MudCardContent>
+                </MudCardContent>
+            </MudCard> *@
+            <MudImage Src="@model.Base64ImageData" ObjectFit="ObjectFit.Cover" />
+
+        </MudItem>
+
+        @*??*@
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                Fill out the form correctly to see the success message.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    RegisterAccountForm model = new RegisterAccountForm();
+    // bool success;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        [StringLength(2000, MinimumLength = 3, ErrorMessage = "Max Character=2000, Min=3")]
+        public string? Description { get; set; }
+
+        // [Required]
+        // [EmailAddress]
+        // public string? Email { get; set; }
+
+        // [Required]
+        // [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+        // public string? Password { get; set; }
+
+        [Required]
+        public string? ImageFileName { get; set; }
+        public int CurrentDescriptionLength { get => Description?.Length ?? 0; }
+
+        public string? Base64ImageData { get; set; }
+    }
+
+    private void OnValidSubmit(EditContext context)
+    {
+        // success = true;
+        StateHasChanged();
+    }
+
+    private void UploadFiles(IBrowserFile file)
+    {
+        model.ImageFileName = file.Name;
+        UploadImageConvert(file);
+    }
+
+    private async void UploadImageConvert(IBrowserFile browserFile)
+    {
+        model.Base64ImageData = await Task.Run(() => GetImageSourceFromBase64FilePath(browserFile));
+        StateHasChanged();
+    }
+
+    private async Task<string> GetImageSourceFromBase64FilePath(IBrowserFile file)
+    {
+        var resizedFile = await file.RequestImageFileAsync(file.ContentType, 500, 500);
+        var buffer = new byte[resizedFile.Size];
+        using var streamData = resizedFile.OpenReadStream();
+        await streamData.ReadAsync(buffer);
+        var imagesrc = Convert.ToBase64String(buffer);
+        return await Task.FromResult(string.Format("data:image/png;base64,{0}", imagesrc));
+    }
+}

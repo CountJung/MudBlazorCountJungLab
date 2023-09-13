@@ -56,7 +56,32 @@
                 }
             </MudItem>
         </MudGrid>
-        <MudGrid>
+        <MudGrid Class="d-flex align-center justify-content-center ma-3">
+            <MudItem xs="12" sm="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Secondary">I</MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">Istra Croatia</MudText>
+                            <MudText Typo="Typo.body2">Peninsula in Europe</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardMedia Image="@base64UploadData" />
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">This photo was taken in a small village in Istra Croatia.</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Share" Color="Color.Default" />
+                    </MudCardActions>
+                </MudCard>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center">[Card]</MudText>
+            </MudItem>
             <MudItem xs="12" md="8" Class="d-flex justify-center align-center" Style="height:500px;">
                 <MudImage ObjectFit="ImageFit" Height="@(SetHeight ? ImageHeight : null)" Width="@(SetWidth ? ImageWidth : null)" Src="@($"images/{ImagePath}")" Alt="Mony the dog" Elevation="25" Class="rounded-lg" />
             </MudItem>
@@ -82,28 +107,22 @@
                         <MudSelectItem T="ObjectFit" Value="ObjectFit.Fill">Fill</MudSelectItem>
                         <MudSelectItem T="ObjectFit" Value="ObjectFit.ScaleDown">ScaleDown</MudSelectItem>
                     </MudSelect>
-                    <div class="d-flex justify-space-between align-center mt-4">
-                        <MudText>Width: @(SetWidth ? $"{ImageWidth}px" : "Auto")</MudText>
+                    <MudText>Width: @(SetWidth ? $"{ImageWidth}px" : "Auto")</MudText>
                         <MudSwitch @bind-Checked="@SetWidth" Color="Color.Primary" Class="mr-0" />
-                    </div>
-                    <MudSlider @bind-Value="@ImageWidth" Disabled="@(!SetWidth)" Max="400" Color="Color.Primary" />
-                    <div class="d-flex justify-space-between align-center mt-4">
+                        <MudSlider @bind-Value="@ImageWidth" Disabled="@(!SetWidth)" Max="400" Color="Color.Primary" />
                         <MudText>Height: @(SetHeight ? $"{ImageHeight}px" : "Auto")</MudText>
                         <MudSwitch @bind-Checked="@SetHeight" Color="Color.Secondary" Class="mr-0" />
-                    </div>
-                    <MudSlider @bind-Value="@ImageHeight" Disabled="@(!SetHeight)" Max="350" Color="Color.Secondary" />
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-            <MudGrid>
+                        <MudSlider @bind-Value="@ImageHeight" Disabled="@(!SetHeight)" Max="350" Color="Color.Secondary" />
+                    </MudPaper>
+                </MudItem>
                 <MudItem xs="12" sm="6" md="4" Class="d-flex justify-center align-center">
                     <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary" @onclick=@( async () => await BlazorDownload!.DownloadFile("image.jpg", Base64ImageString!,"application/octet-stream"))
-                           StartIcon="@Icons.Material.Filled.DownloadForOffline">
+                               Color="Color.Primary" @onclick=@( async () => await BlazorDownload!.DownloadFile("image.jpg", Base64ImageString!,"application/octet-stream"))
+                               StartIcon="@Icons.Material.Filled.DownloadForOffline">
                         Download Image
                     </MudButton>
                 </MudItem>
-            </MudGrid>
+        </MudGrid>
     </ChildContent>
     <ErrorContent>
         <MudAppBar Bottom="true" Color="Color.Primary">
@@ -114,12 +133,13 @@
     </ErrorContent>
 </ErrorBoundary>
 
-@code {
+    @code {
     private ErrorBoundary? errorBoundary;
     private Resource resource = new();
     private CancellationTokenSource cts = new();
 
     IList<IBrowserFile> files = new List<IBrowserFile>();
+    private string? base64UploadData;
     [Inject] public IBlazorDownloadFileService? BlazorDownload { get; set; }
     public string? Base64ImageString { get; private set; }
 
@@ -133,24 +153,34 @@
 
     private void UploadFiles(IBrowserFile file)
     {
+        UploadImageConvert(file);
         foreach(var browserfile in files)
         {
             if (browserfile.Name.Contains(file.Name))
                 return;
         }
         files.Add(file);
+        StateHasChanged();
         //TODO upload the files to the server
     }
 
     private void UploadFiles(InputFileChangeEventArgs args)
     {
+        UploadImageConvert(args.File);
         foreach (var browserfile in files)
         {
             if (browserfile.Name.Contains(args.File.Name))
                 return;
         }
         files.Add(args.File);
+        StateHasChanged();
         //TODO upload the files to the server
+    }
+
+    private async void UploadImageConvert(IBrowserFile browserFile)
+    {
+        base64UploadData = await Task.Run(() => GetImageSourceFromBase64FilePath(browserFile));
+        StateHasChanged();
     }
 
     private Stream GetFileStream()
@@ -184,11 +214,12 @@
     protected override async Task OnInitializedAsync()
     {
         Base64ImageString = await GetBase64StringImage("images/4.jpeg");
+        base64UploadData = "images/iphone_cactus_tea_overhead_bw_w1080.jpg";
     }
 
     private async void UpdateTask() => await UpdateBase64Image();
     private async Task UpdateBase64Image() => Base64ImageString = await GetBase64StringImage($"images/{ImagePath}");
-    
+
     //server side
     private string ConvertFileToBase64(string path)
     {
@@ -202,6 +233,17 @@
         byte[]? byteImageFile = await HttpC.GetByteArrayAsync(path);
         string base64String = Convert.ToBase64String(byteImageFile);
         return await Task.FromResult(base64String);
+    }
+
+    private async Task<string> GetImageSourceFromBase64FilePath(IBrowserFile file)
+    {
+        // using var imageInfo = System.Drawing.Image.FromStream(file.OpenReadStream());
+        var resizedFile = await file.RequestImageFileAsync(file.ContentType, ImageHeight, ImageWidth);
+        var buffer = new byte[resizedFile.Size];
+        using var streamData = resizedFile.OpenReadStream();
+        await streamData.ReadAsync(buffer);
+        var imagesrc = Convert.ToBase64String(buffer);
+        return await Task.FromResult( string.Format("data:image/png;base64,{0}", imagesrc));
     }
 
     protected override void OnParametersSet()
