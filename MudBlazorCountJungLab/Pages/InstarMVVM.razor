@@ -1,11 +1,36 @@
 ﻿@page "/InstarMVVM"
 
 @using MudBlazorCountJungLab.Components
+@using MudBlazorCountJungLab.ViewModels;
+@using System.ComponentModel;
+@inject InstarPostViewModel ViewModel;
 
 <PageTitle> Instargram MVVM </PageTitle>
-<MudText Typo="Typo.h2"> Instagram MVVM Test Page</MudText>
-<InstarFormComponent/>
+<MudText Typo="Typo.h3"> Instagram MVVM Test Page</MudText>
+
+<CascadingValue Value="@ViewModel" Name="InstarViewModel">
+    <InstarFormComponent />
+    <InstarListComponent />
+</CascadingValue>
 
 @code {
 
+    private async void PropertyChangedHandler(object? sender, PropertyChangedEventArgs eventArgs)
+    {
+        await InvokeAsync(() => { StateHasChanged(); });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //before initialize
+        ViewModel.PropertyChanged += PropertyChangedHandler;
+        await base.OnInitializedAsync();
+    }
+    /// <summary>
+    /// Call When Leave this page
+    /// </summary>
+    public void Dispose()
+    {
+        ViewModel.PropertyChanged -= PropertyChangedHandler;
+    }
 }

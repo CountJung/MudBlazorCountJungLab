@@ -13,10 +13,6 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="7.0.0" />
 		<PackageReference Include="MudBlazor" Version="6.1.9" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="ViewModels\" />
-	</ItemGroup>
 	
 	
 </Project>
