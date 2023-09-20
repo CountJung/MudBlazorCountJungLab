@@ -1,31 +1,35 @@
 ﻿@using MudBlazorCountJungLab.ViewModels;
 
 <MudGrid>
-   @*  <MudItem xs="12">
-        <MudSlider Min="1" Max="20" Immediate="true" Step="1" @bind-Value="papers"></MudSlider>
-    </MudItem> *@
-    <MudItem xs="12">
-        <MudSelect Label="Justify" T="Justify" @bind-Value="justification">
-            <MudSelectItem Value="Justify.FlexStart">Flex Start</MudSelectItem>
-            <MudSelectItem Value="Justify.FlexEnd">Flex End</MudSelectItem>
-            <MudSelectItem Value="Justify.Center">Center</MudSelectItem>
-            <MudSelectItem Value="Justify.SpaceAround">Space Around</MudSelectItem>
-            <MudSelectItem Value="Justify.SpaceBetween">Space Between</MudSelectItem>
-            <MudSelectItem Value="Justify.SpaceEvenly">Space Evenly</MudSelectItem>
-        </MudSelect>
-    </MudItem>
+
     <MudItem xs="12">
         <MudGrid Justify="justification">
-            @for (int i = 0; i < papers; i++)
+           
+            @foreach(var PostItem in ViewModel!.InstarPostItems!.OrderBy(i=>i.RecordDateTime))
             {
-                int localindex = i;
-
-                <MudItem xs="@breaks[localindex]">
-                    <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full py-8">
-                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" OnClick="(()=>UpdateBreaks(localindex,1))" Size="Size.Small" />
-                        <MudText Typo="Typo.h6" Align="Align.Center">@breaks[localindex]</MudText>
-                        <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" OnClick="(()=>UpdateBreaks(localindex,-1))" Size="Size.Small" />
-                    </MudPaper>
+                <MudItem xs="12" sm="4">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <MudAvatar Color="Color.Secondary">@PostItem?.Author</MudAvatar>
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.body1">Title</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Surface" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Surface" />
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardMedia Image="@PostItem?.Base64ImageData" />
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2">@PostItem?.Description</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Share" Color="Color.Default" />
+                        </MudCardActions>
+                    </MudCard>
                 </MudItem>
             }
         </MudGrid>

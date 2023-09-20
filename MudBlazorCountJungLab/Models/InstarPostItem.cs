@@ -14,6 +14,7 @@ namespace MudBlazorCountJungLab.Models
         public string? Description { get; set; }
         public DateTime? RecordDateTime { get; set; }
         [Required]
+        [StringLength(1024*1024*10, ErrorMessage = "Image Size must lower than 10mb")]
         public string? Base64ImageData { get; set; }
         [Required]
         public string? Author { get; set; }

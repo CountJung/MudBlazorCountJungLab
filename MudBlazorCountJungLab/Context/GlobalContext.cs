@@ -1,24 +1,55 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
+using System.Text.Json;
 
 namespace MudBlazorCountJungLab.Context
 {
     public class GlobalContext
     {
-        //public static GlobalVariable? Instance { get; set; }
-        public GlobalContext()
+        private IJSObjectReference? jsModule;
+        private readonly IJSRuntime JS;
+        private readonly ILogger<GlobalContext> logger;
+        //[Inject] IJSRuntime
+        public GlobalContext(IJSRuntime runtime, ILogger<GlobalContext> logger)
         {
-            //Instance = this;
+            JS = runtime;
+            _ = LoadJSModule();
+            this.logger = logger;
+        }
+
+        private async Task LoadJSModule()
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/util.js");
         }
 
         public bool DarkMode { get; set; }
 
+        record ImageDemension(int Width, int Height);
         public async Task<string> GetImageSourceFromBase64FilePath(IBrowserFile file)
         {
-            var resizedFile = await file.RequestImageFileAsync(file.ContentType, 500, 500);
-            var buffer = new byte[resizedFile.Size];
-            using var streamData = resizedFile.OpenReadStream();
-            await streamData.ReadAsync(buffer);
-            var imagesrc = Convert.ToBase64String(buffer);
+            string imagesrc="";
+            try
+            {
+                long maxFileSize = 1024L * 1024L * 1024L * 2L;
+                var streamRefernce = new DotNetStreamReference(file.OpenReadStream(maxFileSize));
+                var json = await jsModule!.InvokeAsync<string>("getImageDimensions", streamRefernce);
+                var imageInfo = JsonSerializer.Deserialize<ImageDemension>(json);
+                var resizedFile = await file.RequestImageFileAsync(file.ContentType, imageInfo!.Width, imageInfo!.Height);
+                var buffer = new byte[resizedFile.Size];
+                using var streamData = resizedFile.OpenReadStream(maxFileSize);
+                await streamData.ReadAsync(buffer);
+                imagesrc = Convert.ToBase64String(buffer);
+                return await Task.FromResult(string.Format("data:image/png;base64,{0}", imagesrc));
+            }
+            catch (IOException ioEx)
+            {
+                logger.LogCritical(ioEx.ToString());
+            }
+            catch(Exception ex) 
+            {
+                logger.LogCritical(ex.ToString());
+            }
             return await Task.FromResult(string.Format("data:image/png;base64,{0}", imagesrc));
         }
     }

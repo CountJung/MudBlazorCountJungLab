@@ -1,10 +1,11 @@
-﻿using MudBlazorCountJungLab.Models;
+﻿using MudBlazorCountJungLab.Interfaces;
+using MudBlazorCountJungLab.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace MudBlazorCountJungLab.ViewModels
 {
-    public class InstarPostViewModel : INotifyPropertyChanged
+    public class InstarPostViewModel : INotifyPropertyChanged , IFormModel
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -29,14 +30,14 @@ namespace MudBlazorCountJungLab.ViewModels
         private List<InstarPostItem>? instarPostItems;
         public List<InstarPostItem>? InstarPostItems { get => instarPostItems ??= new(); set => Set(ref instarPostItems, value); }
 
-        public void SavePostItems(InstarPostItem instarPostItem)
+        public void SubmitPost()
         {
             //New case
-            if(instarPostItem.Id.Equals(Guid.Empty))
+            if(CurrentInstarPostItem!.Id.Equals(Guid.Empty))
             {
-                instarPostItem.Id = Guid.NewGuid();
-                instarPostItem.RecordDateTime = DateTime.Now;
-                instarPostItems?.Add(instarPostItem);
+                CurrentInstarPostItem.Id = Guid.NewGuid();
+                CurrentInstarPostItem.RecordDateTime = DateTime.Now;
+                instarPostItems?.Add(CurrentInstarPostItem);
             }
             OnPropertyChanged(nameof(InstarPostItems));
         }

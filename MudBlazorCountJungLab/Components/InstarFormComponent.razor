@@ -6,8 +6,8 @@
 
 <EditForm Model="@ViewModel?.CurrentInstarPostItem" OnValidSubmit="SubmitPost" Context="UploadForm">
     <DataAnnotationsValidator />
-    <MudGrid>
-        <MudItem xs="12" sm="7">
+    <MudGrid >
+        <MudItem xs="12" sm="6" md="6">
             <MudCard>
                 <MudCardContent>
                     <MudTextField Label="Author" HelperText="Author Name" Class="mt-3" Variant="Variant.Outlined"
@@ -30,7 +30,6 @@
                             </MudButton>
                         </ButtonTemplate>
                     </MudFileUpload>
-
                 </MudCardContent>
 
                 <MudCardActions>
@@ -40,16 +39,16 @@
         </MudItem>
 
         @*Image layer*@
-        <MudItem xs="12" sm="5">
-            <MudImage Src="@ViewModel?.CurrentInstarPostItem?.Base64ImageData" ObjectFit="ObjectFit.Cover" />
+        <MudItem xs="12" sm="4" md="4">
+            <MudImage Src="@ViewModel?.CurrentInstarPostItem?.Base64ImageData" ObjectFit="ObjectFit.Cover" Width="640" Height="480"/>
         </MudItem>
 
         @*??*@
-        <MudItem xs="12">
+        @* <MudItem xs="12">
             <MudText Typo="Typo.body2" Align="Align.Center">
                 Fill out the form correctly to see the success message.
             </MudText>
-        </MudItem>
+        </MudItem> *@
     </MudGrid>
 </EditForm>
 
@@ -57,29 +56,31 @@
     [CascadingParameter(Name = "InstarViewModel")]
     InstarPostViewModel? ViewModel { get; set; }
 
-
     [Required]
     public string? ImageFileName { get; set; }
     public int CurrentDescriptionLength { get => ViewModel?.CurrentInstarPostItem?.Description?.Length ?? 0; }
 
-    private void SubmitPost(EditContext context)
+    private void SubmitPost()
     {
         // success = true;
         // StateHasChanged();
-        ViewModel?.SavePostItems(ViewModel?.CurrentInstarPostItem!);
+        ViewModel?.SubmitPost();
         ViewModel!.CurrentInstarPostItem = new Models.InstarPostItem();
     }
 
     private void UploadFiles(IBrowserFile file)
     {
-        ImageFileName = file.Name;
-        UploadImageConvert(file);
+        if (file.ContentType == "image/png" || file.ContentType == "image/jpeg")
+        {
+            ImageFileName = file.Name;
+            UploadImageConvert(file);
+        }
     }
 
     private async void UploadImageConvert(IBrowserFile browserFile)
     {
         ViewModel!.CurrentInstarPostItem!.Base64ImageData = await Task.Run(() => GlobalFunc.GetImageSourceFromBase64FilePath(browserFile));
-        // StateHasChanged();
+        StateHasChanged();
     }
 
 }
