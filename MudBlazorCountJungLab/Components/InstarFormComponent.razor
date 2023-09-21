@@ -7,12 +7,13 @@
 <EditForm Model="@ViewModel?.CurrentInstarPostItem" OnValidSubmit="SubmitPost" Context="UploadForm">
     <DataAnnotationsValidator />
     <MudGrid >
-        <MudItem xs="12" sm="6" md="6">
+        <MudItem xs="12" sm="8" md="8">
             <MudCard>
                 <MudCardContent>
                     <MudTextField Label="Author" HelperText="Author Name" Class="mt-3" Variant="Variant.Outlined"
                     @bind-Value="ViewModel!.CurrentInstarPostItem!.Author" For="@(() => ViewModel!.CurrentInstarPostItem!.Author )" InputType="InputType.Text" />
-
+                    <MudTextField Label="Title" HelperText="Title" Class="mt-3" Variant="Variant.Outlined"
+                    @bind-Value="ViewModel!.CurrentInstarPostItem!.Title" For="@(() => ViewModel!.CurrentInstarPostItem!.Title)" InputType="InputType.Text" />
                     <MudTextField T="string" Label="Description" HelperText="@($"Max2000, Current={CurrentDescriptionLength}")" Variant="Variant.Outlined" Lines="10"
                     @bind-Value="ViewModel.CurrentInstarPostItem.Description" For="@(() => ViewModel.CurrentInstarPostItem.Description)" />
 
@@ -25,7 +26,7 @@
                             <MudButton HtmlTag="label"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.CloudUpload" for="@context">  
+                                       StartIcon="@Icons.Material.Filled.CloudUpload" for="@context">
                                 Upload Image
                             </MudButton>
                         </ButtonTemplate>
@@ -33,6 +34,7 @@
                 </MudCardContent>
 
                 <MudCardActions>
+                    <MudText Typo="Typo.body1">Image Size Limit about below 4K</MudText>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Submit</MudButton>
                 </MudCardActions>
             </MudCard>
@@ -40,15 +42,9 @@
 
         @*Image layer*@
         <MudItem xs="12" sm="4" md="4">
-            <MudImage Src="@ViewModel?.CurrentInstarPostItem?.Base64ImageData" ObjectFit="ObjectFit.Cover" Width="640" Height="480"/>
+            <MudImage Src="@ViewModel?.CurrentInstarPostItem?.Base64ImageData" ObjectFit="ObjectFit.Cover" Width="320" Height="240"/>
         </MudItem>
 
-        @*??*@
-        @* <MudItem xs="12">
-            <MudText Typo="Typo.body2" Align="Align.Center">
-                Fill out the form correctly to see the success message.
-            </MudText>
-        </MudItem> *@
     </MudGrid>
 </EditForm>
 
@@ -66,6 +62,8 @@
         // StateHasChanged();
         ViewModel?.SubmitPost();
         ViewModel!.CurrentInstarPostItem = new Models.InstarPostItem();
+        ImageFileName = "";
+        StateHasChanged();
     }
 
     private void UploadFiles(IBrowserFile file)
