@@ -1,8 +1,11 @@
-﻿@using MudBlazorCountJungLab.Interfaces;
+﻿@using MudBlazorCountJungLab.Context;
+@using MudBlazorCountJungLab.Interfaces;
 @using MudBlazorCountJungLab.Models;
 @using MudBlazorCountJungLab.ViewModels;
+
 @inject IBlazorDownloadFileService BlazorDown;
 @inject ILogger<InstarListComponent> Logconsole;
+@inject GlobalContext GlobalSet
 
 <MudGrid>
     <MudItem xs="12">
@@ -13,7 +16,9 @@
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Secondary">@PostItem?.Author?.First()</MudAvatar>
+                                <MudAvatar Color="Color.Secondary">@PostItem?.Author?.First()
+                                    <MudImage Src="@GlobalSet?.Profile"/>
+                                </MudAvatar>
                             </CardHeaderAvatar>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.body1">@PostItem?.Title</MudText>
@@ -29,7 +34,7 @@
                         </MudCardContent>
                         <MudCardActions>
                             <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" OnClick="@(()=>FavoriteClick(PostItem!))"/>
-                            <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Default" @onclick="@(async ()=>await DownLoadImage(PostItem!))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Download" Color="Color.Default" OnClick="@(async ()=>await DownLoadImage(PostItem!))" />
                         </MudCardActions>
                     </MudCard>
                 </MudItem>

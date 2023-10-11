@@ -1,8 +1,7 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using MudBlazorCountJungLab.Context;
 @using MudBlazorCountJungLab.ViewModels;
-@inject GlobalContext GlobalFunc;
-
+@inject GlobalContext GlobalSet;
 
 <EditForm Model="@ViewModel?.CurrentInstarPostItem" OnValidSubmit="SubmitPost" Context="UploadForm">
     <DataAnnotationsValidator />
@@ -62,6 +61,7 @@
         // StateHasChanged();
         ViewModel?.SubmitPost();
         ViewModel!.CurrentInstarPostItem = new Models.InstarPostItem();
+        ViewModel!.CurrentInstarPostItem!.Author = GlobalSet.User;
         ImageFileName = "";
         StateHasChanged();
     }
@@ -77,8 +77,13 @@
 
     private async void UploadImageConvert(IBrowserFile browserFile)
     {
-        ViewModel!.CurrentInstarPostItem!.Base64ImageData = await Task.Run(() => GlobalFunc.GetImageSourceFromBase64FilePath(browserFile));
+        ViewModel!.CurrentInstarPostItem!.Base64ImageData = await Task.Run(() => GlobalSet.GetImageSourceFromBase64FilePath(browserFile));
         StateHasChanged();
     }
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ViewModel!.CurrentInstarPostItem!.Author = GlobalSet.User;
+    }
 }

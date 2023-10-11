@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
+using System.Net.NetworkInformation;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Authorization;
+using MudBlazorCountJungLab.Provider;
 
 namespace MudBlazorCountJungLab.Context
 {
@@ -24,7 +27,8 @@ namespace MudBlazorCountJungLab.Context
         }
 
         public bool DarkMode { get; set; }
-
+        public string? User { get; set; } = "😃";
+        public string? Profile { get; set; } = "";
         record ImageDemension(int Width, int Height);
         public async Task<string> GetImageSourceFromBase64FilePath(IBrowserFile file)
         {
@@ -52,5 +56,6 @@ namespace MudBlazorCountJungLab.Context
             }
             return await Task.FromResult(string.Format("data:image/png;base64,{0}", imagesrc));
         }
+
     }
 }

@@ -1,6 +1,12 @@
 ﻿@using MudBlazorCountJungLab.Context;
+@using MudBlazorCountJungLab.Provider;
+@using Microsoft.AspNetCore.Components.Authorization;
+
+@implements IDisposable
 @inherits LayoutComponentBase
 @*@inject NavigationManager NaviManager*@
+@inject IJSRuntime JSService
+@inject GoogleAuthenticationStateProvider googleAuthStatProvider
 
 <MudThemeProvider @bind-IsDarkMode="@isDarkMode" @ref="@mudThemeProvider" Theme="mudTheme" DefaultScrollbar=true />
 <MudDialogProvider />
@@ -9,12 +15,15 @@
 <MudLayout>
     <MudAppBar Elevation="0" Color="Color.Tertiary" >
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle(e))" />
-        <MudSpacer />
-        @*<MudSwitch @bind-Checked="@isDarkMode" Color="Color.Inherit" T="bool" Class="ma-8" Label="Toggle Light/Dark Mode" />*@
         <MudToggleIconButton @bind-Toggled="@isDarkMode" Icon="@Icons.Material.Filled.LightMode" ToggledIcon="@Icons.Material.Filled.DarkMode" Color="Color.Primary" ToggledColor="Color.Secondary" Title="LightMode" ToggledTitle="DarkMode" />
-        <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Href="https://mudblazor.com/" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />
-        <MudAvatar Color="Color.Warning">@User</MudAvatar>
+        <MudSpacer />
+        @*  <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Href="https://mudblazor.com/" Target="_blank" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor/" Target="_blank" /> *@
+        <div id="google-login-button" />
+        <MudButton Class="ma-4" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="@(()=>LogOutClick())">Log Out</MudButton>
+        <MudAvatar Class="ma-4" Color="Color.Warning"> @globalSet?.User
+            <MudImage Src="@globalSet?.Profile"/>
+        </MudAvatar>
     </MudAppBar>
     <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1">
         <MudDrawerHeader>
@@ -53,15 +62,48 @@
     private bool drawerOpen = false;
     private bool isDarkMode = false;
     private MudThemeProvider? mudThemeProvider;
-    [Inject] GlobalContext? globalVariable { get; set; }
+    [Inject] GlobalContext? globalSet { get; set; }
     [Parameter] public DateTime StartTime { get; set; }
-    string? User { get; set; } = "사";
+    // string? User { get; set; } = "😃";
+    // private string? profile { get; set; } = "";
+    private IJSObjectReference? jsModule;
+    private Timer? refreshTimer;
+
+    // protected override void OnInitialized()
+    // {
+    //     base.OnInitialized();
+    //     mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
+    // }
 
     protected override async Task OnInitializedAsync()
     {
-        //avoid warning
-        await Task.CompletedTask;
-        mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
+        await InvokeAsync(() =>
+        {
+            mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
+            refreshTimer = new Timer(async (_) => { await RefershPage(); }, null, 0, 1000);
+        });
+    }
+
+    public void Dispose()
+    {
+        //never reach here in logic
+        refreshTimer?.Dispose();
+    }
+
+    private async Task RefershPage()
+    {
+        globalSet!.User = googleAuthStatProvider?.CurrentUser?.FamilyName;
+        globalSet.Profile = googleAuthStatProvider?.CurrentUser?.Picture;
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadJSModule()
+    {
+        //https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet?view=aspnetcore-7.0#javascript-isolation-in-javascript-modules
+        jsModule = await JSService.InvokeAsync<IJSObjectReference>("import", "./js/googleOAuth.js");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -71,15 +113,17 @@
             isDarkMode = await mudThemeProvider?.GetSystemPreference()!;
             //await mudThemeProvider?.WatchSystemPreference(SystemPreferenceChanged);
             StateHasChanged();
+            //google oauth
+            await LoadJSModule();
+            var googlelAuthenticationStateProvider = DotNetObjectReference.Create<GoogleAuthenticationStateProvider>(googleAuthStatProvider);
+            await jsModule!.InvokeVoidAsync("GoogleAuthInitialize", "546541242863-l1t6pcb89jriohp94r13noboakimu007.apps.googleusercontent.com", googlelAuthenticationStateProvider);
+            var element = await JSService.InvokeAsync<IJSObjectReference>("document.getElementById", "google-login-button");
+            await JSService.InvokeVoidAsync("google.accounts.id.renderButton", element, new { theme = "filled_blue", size = "large" });
         }
-        else
-        {
-        }
-        //if(GlobalVariable.Instance != null)
-        {
-            //GlobalVariable.Instance!.DarkMode = isDarkMode;
-            globalVariable!.DarkMode = isDarkMode;
-        }
+
+        globalSet!.DarkMode = isDarkMode;
+        // profile = googleAuthStatProvider?.CurrentUser?.Picture;
+        // User = googleAuthStatProvider?.CurrentUser?.FamilyName;
         //if (Pages.Index.Instance is not null)
         //{
         //    Pages.Index.Instance.DarkMode = isDarkMode;
@@ -92,6 +136,7 @@
         base.OnParametersSet(); //nothing
         if (StartTime == default)
             StartTime = DateTime.Now;
+        StateHasChanged();
     }
 
     private async Task SystemPreferenceChanged(bool change)
@@ -104,5 +149,13 @@
     private void DrawerToggle(MouseEventArgs eventArgs)
     {
         drawerOpen = !drawerOpen;
+    }
+
+    private void LogOutClick()
+    {
+        googleAuthStatProvider.Logout();
+        googleAuthStatProvider.CurrentUser = new();
+        // globalVariable!.User = googleAuthStatProvider?.CurrentUser?.FamilyName;
+        // globalVariable!.Profile = googleAuthStatProvider?.CurrentUser?.Picture;
     }
 }
