@@ -19,8 +19,9 @@
         <MudSpacer />
         @*  <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Href="https://mudblazor.com/" Target="_blank" />
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor/" Target="_blank" /> *@
-        <div id="google-login-button" />
-        <MudButton Class="ma-4" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="@(()=>LogOutClick())">Log Out</MudButton>
+        @* <div id="google-login-button" /> *@
+        <MudButton Class="ma-4" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Login" OnClick="@(()=>SignInGoogleAsync())">Log-In</MudButton>
+        <MudButton Class="ma-4" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="@(()=>LogOutClick())">Log-Out</MudButton>
         <MudAvatar Class="ma-4" Color="Color.Warning"> @globalSet?.User
             <MudImage Src="@globalSet?.Profile"/>
         </MudAvatar>
@@ -75,13 +76,16 @@
     //     mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
     // }
 
-    protected override async Task OnInitializedAsync()
+    protected override /* async */ Task OnInitializedAsync()
     {
-        await InvokeAsync(() =>
-        {
-            mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
-            refreshTimer = new Timer(async (_) => { await RefershPage(); }, null, 0, 1000);
-        });
+        // await InvokeAsync(() =>
+        // {
+        //     mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
+        //     refreshTimer = new Timer(async (_) => { await RefershPage(); }, null, 0, 1000);
+        // });
+        mudTheme.LayoutProperties.DrawerWidthLeft = "300px";
+        refreshTimer = new Timer(async (_) => { await RefershPage(); }, null, 0, 1000);
+        return Task.CompletedTask;
     }
 
     public void Dispose()
@@ -90,14 +94,17 @@
         refreshTimer?.Dispose();
     }
 
-    private async Task RefershPage()
+    private /* async */ Task RefershPage()
     {
         globalSet!.User = googleAuthStatProvider?.CurrentUser?.FamilyName;
         globalSet.Profile = googleAuthStatProvider?.CurrentUser?.Picture;
-        await InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        // await InvokeAsync(() =>
+        // {
+        //     StateHasChanged();
+        // });
+        StateHasChanged();
+        return Task.CompletedTask;
+        // return Task.FromResult(0);
     }
 
     private async Task LoadJSModule()
@@ -115,10 +122,10 @@
             StateHasChanged();
             //google oauth
             await LoadJSModule();
-            var googlelAuthenticationStateProvider = DotNetObjectReference.Create<GoogleAuthenticationStateProvider>(googleAuthStatProvider);
-            await jsModule!.InvokeVoidAsync("GoogleAuthInitialize", "546541242863-l1t6pcb89jriohp94r13noboakimu007.apps.googleusercontent.com", googlelAuthenticationStateProvider);
-            var element = await JSService.InvokeAsync<IJSObjectReference>("document.getElementById", "google-login-button");
-            await JSService.InvokeVoidAsync("google.accounts.id.renderButton", element, new { theme = "filled_blue", size = "large" });
+            // var googlelAuthenticationStateProvider = DotNetObjectReference.Create<GoogleAuthenticationStateProvider>(googleAuthStatProvider);
+            // await jsModule!.InvokeVoidAsync("GoogleAuthInitialize", "546541242863-l1t6pcb89jriohp94r13noboakimu007.apps.googleusercontent.com", googlelAuthenticationStateProvider);
+            // var element = await JSService.InvokeAsync<IJSObjectReference>("document.getElementById", "google-login-button");
+            // await JSService.InvokeVoidAsync("google.accounts.id.renderButton", element, new { theme = "filled_blue", size = "large" });
         }
 
         globalSet!.DarkMode = isDarkMode;
@@ -129,6 +136,13 @@
         //    Pages.Index.Instance.DarkMode = isDarkMode;
         //}
         //NaviManager.NavigateTo($"/?DarkMode={isDarkMode}");
+    }
+
+    private async Task SignInGoogleAsync()
+    {
+        var googlelAuthenticationStateProvider = DotNetObjectReference.Create<GoogleAuthenticationStateProvider>(googleAuthStatProvider);
+        await jsModule!.InvokeVoidAsync("GoogleAuthInitialize", "546541242863-l1t6pcb89jriohp94r13noboakimu007.apps.googleusercontent.com", googlelAuthenticationStateProvider);
+        await jsModule!.InvokeVoidAsync("blazorSchoolGooglePrompt");
     }
 
     protected override void OnParametersSet()
