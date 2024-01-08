@@ -22,11 +22,12 @@
         @* <div id="google-login-button" /> *@
         <MudButton Class="ma-4" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Login" OnClick="@(()=>SignInGoogleAsync())">Log-In</MudButton>
         <MudButton Class="ma-4" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" OnClick="@(()=>LogOutClick())">Log-Out</MudButton>
-        <MudAvatar Class="ma-4" Color="Color.Warning"> @globalSet?.User
+        <MudAvatar Class="ma-4" Color="Color.Warning">
+            @globalSet?.User
             <MudImage Src="@globalSet?.Profile"/>
         </MudAvatar>
     </MudAppBar>
-    <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1">
+    <MudDrawer @bind-Open="drawerOpen" Anchor="Anchor.Start" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
         <MudDrawerHeader>
             <MudText Typo="Typo.h6">MudBlazorCountJungLab</MudText>
         </MudDrawerHeader>
@@ -41,25 +42,7 @@
 
 @code {
     private MudTheme mudTheme = new();
-    MudTheme MyCustomTheme = new MudTheme()
-        {
-            Palette = new Palette()
-            {
-                Primary = Colors.Blue.Default,
-                Secondary = Colors.Green.Accent4,
-                AppbarBackground = Colors.Red.Default,
-            },
-            PaletteDark = new PaletteDark()
-            {
-                Primary = Colors.Blue.Lighten1
-            },
 
-            LayoutProperties = new LayoutProperties()
-            {
-                DrawerWidthLeft = "260px",
-                DrawerWidthRight = "300px"
-            }
-        };
     private bool drawerOpen = false;
     private bool isDarkMode = false;
     private MudThemeProvider? mudThemeProvider;
@@ -171,5 +154,28 @@
         googleAuthStatProvider.CurrentUser = new();
         // globalVariable!.User = googleAuthStatProvider?.CurrentUser?.FamilyName;
         // globalVariable!.Profile = googleAuthStatProvider?.CurrentUser?.Picture;
+    }
+
+    private void ChangeTheme()
+    {
+         mudTheme = new MudTheme()
+            {
+                Palette = new Palette()
+                {
+                    Primary = Colors.Blue.Default,
+                    Secondary = Colors.Green.Accent4,
+                    AppbarBackground = Colors.Red.Default,
+                },
+                PaletteDark = new PaletteDark()
+                {
+                    Primary = Colors.Blue.Lighten1
+                },
+
+                LayoutProperties = new LayoutProperties()
+                {
+                    DrawerWidthLeft = "260px",
+                    DrawerWidthRight = "300px"
+                }
+            };
     }
 }

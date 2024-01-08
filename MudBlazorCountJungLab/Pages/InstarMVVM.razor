@@ -4,6 +4,7 @@
 @using MudBlazorCountJungLab.ViewModels;
 @using System.ComponentModel;
 @inject InstarPostViewModel ViewModel;
+@implements IDisposable
 
 <PageTitle> Instargram MVVM </PageTitle>
 <MudText Typo="Typo.h3"> Instagram MVVM Test Page Counts=@($"{ViewModel?.InstarPostItems?.Count}")</MudText>
