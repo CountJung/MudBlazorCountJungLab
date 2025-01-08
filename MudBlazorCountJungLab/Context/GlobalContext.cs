@@ -1,43 +1,35 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using System.Net.NetworkInformation;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Authorization;
-using MudBlazorCountJungLab.Provider;
 
 namespace MudBlazorCountJungLab.Context
 {
     public class GlobalContext
     {
-        private IJSObjectReference? jsModule;
-        private readonly IJSRuntime JS;
+        private readonly JavaScriptModuleService jsModuleService;
         private readonly ILogger<GlobalContext> logger;
-        //[Inject] IJSRuntime
-        public GlobalContext(IJSRuntime runtime, ILogger<GlobalContext> logger)
-        {
-            JS = runtime;
-            _ = LoadJSModule();
-            this.logger = logger;
-        }
 
-        private async Task LoadJSModule()
+        public GlobalContext(JavaScriptModuleService jsModuleService, ILogger<GlobalContext> logger)
         {
-            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/util.js");
+            this.jsModuleService = jsModuleService;
+            this.logger = logger;
         }
 
         public bool DarkMode { get; set; }
         public string? User { get; set; } = "😃";
         public string? Profile { get; set; } = "";
+
         record ImageDemension(int Width, int Height);
+
         public async Task<string> GetImageSourceFromBase64FilePath(IBrowserFile file)
         {
-            string imagesrc="";
+            string imagesrc = "";
             try
             {
                 long maxFileSize = 1024L * 1024L * 1024L * 2L;
                 var streamRefernce = new DotNetStreamReference(file.OpenReadStream(maxFileSize));
-                var json = await jsModule!.InvokeAsync<string>("getImageDimensions", streamRefernce);
+                var jsModule = await jsModuleService.GetJsModuleAsync();
+                var json = await jsModule.InvokeAsync<string>("getImageDimensions", streamRefernce);
                 var imageInfo = JsonSerializer.Deserialize<ImageDemension>(json);
                 var resizedFile = await file.RequestImageFileAsync(file.ContentType, imageInfo!.Width, imageInfo!.Height);
                 var buffer = new byte[resizedFile.Size];
@@ -50,12 +42,11 @@ namespace MudBlazorCountJungLab.Context
             {
                 logger.LogCritical(ioEx.ToString());
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 logger.LogCritical(ex.ToString());
             }
             return await Task.FromResult(string.Format("data:image/png;base64,{0}", imagesrc));
         }
-
     }
 }

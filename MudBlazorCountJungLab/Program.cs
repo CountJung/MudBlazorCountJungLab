@@ -18,6 +18,7 @@ builder.Services.AddBlazorDownloadFile();
 builder.Services.AddScoped<InstarPostViewModel>();
 builder.Services.AddScoped<GoogleAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(p=>p.GetRequiredService<GoogleAuthenticationStateProvider>());
+builder.Services.AddSingleton<JavaScriptModuleService>();
 builder.Services.AddSingleton<GlobalContext>();
 builder.Services.AddAuthorizationCore();
 
